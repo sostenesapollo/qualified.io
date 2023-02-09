@@ -1,21 +1,19 @@
-const express = require("express");
-const app = express();
-
-function containsNumbers(str) {
-  return /\d/.test(str);
+const prioritizeNodes = (tree, targetVal) => {
+  const recursive = ({val, children}) => {
+      if (!children) {
+          return [{ val }, val === targetVal];
+      }
+      let categories = [[], []], isPrioritized;
+      for (let child of children) {
+          [child, isPrioritized] = recursive(child);
+          categories[1-isPrioritized].push(child);
+      }
+      return [
+          { val, children: categories.flat() },
+          categories[0].length > 0 || val === targetVal
+      ];
+  }
+  return recursive(tree)[0];
 }
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.post("/secret-words", (request, response) => {
-  console.log('>', request.body.wordsBox, containsNumbers(request.body.wordsBox));
-  return response.status(400).json("Only lower case letters are allowed");
-  // return response.status(400).send('Only lower case letters are allowed');
-  // if(containsNumbers(request.body.wordsBox)) {
-  // }
-  // response.end(201);
-});
-
-// app.listen(3009, () => {})
-module.exports = app; 
+module.exports = prioritizeNodes
